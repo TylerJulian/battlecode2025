@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
+import static battlecode.common.PaintType.*;
+
 
 /**
  * RobotPlayer is the class that describes your main robot strategy.
@@ -75,7 +77,7 @@ public class RobotPlayer {
                 switch (rc.getType()){
                     case SOLDIER: runSoldier(rc); break; 
                     case MOPPER: runMopper(rc); break;
-                    case SPLASHER: break; // Consider upgrading examplefuncsplayer to use splashers!
+                    case SPLASHER: runSplasher(rc); // Consider upgrading examplefuncsplayer to use splashers!
                     default: runTower(rc); break;
                     }
                 }
@@ -122,9 +124,9 @@ public class RobotPlayer {
             System.out.println("BUILT A MOPPER");
         }
         else if (robotType == 2 && rc.canBuildRobot(UnitType.SPLASHER, nextLoc)){
-            // rc.buildRobot(UnitType.SPLASHER, nextLoc);
-            // System.out.println("BUILT A SPLASHER");
-            rc.setIndicatorString("SPLASHER NOT IMPLEMENTED YET");
+            rc.buildRobot(UnitType.SPLASHER, nextLoc);
+            System.out.println("BUILT A SPLASHER");
+            //
         }
 
         // Read incoming messages
@@ -158,13 +160,13 @@ public class RobotPlayer {
                 rc.move(dir);
             // Mark the pattern we need to draw to build a tower here if we haven't already.
             MapLocation shouldBeMarked = curRuin.getMapLocation().subtract(dir);
-            if (rc.senseMapInfo(shouldBeMarked).getMark() == PaintType.EMPTY && rc.canMarkTowerPattern(UnitType.LEVEL_ONE_PAINT_TOWER, targetLoc)){
+            if (rc.senseMapInfo(shouldBeMarked).getMark() == EMPTY && rc.canMarkTowerPattern(UnitType.LEVEL_ONE_PAINT_TOWER, targetLoc)){
                 rc.markTowerPattern(UnitType.LEVEL_ONE_PAINT_TOWER, targetLoc);
                 System.out.println("Trying to build a tower at " + targetLoc);
             }
             // Fill in any spots in the pattern with the appropriate paint.
             for (MapInfo patternTile : rc.senseNearbyMapInfos(targetLoc, 8)){
-                if (patternTile.getMark() != patternTile.getPaint() && patternTile.getMark() != PaintType.EMPTY){
+                if (patternTile.getMark() != patternTile.getPaint() && patternTile.getMark() != EMPTY){
                     boolean useSecondaryColor = patternTile.getMark() == PaintType.ALLY_SECONDARY;
                     if (rc.canAttack(patternTile.getMapLocation()))
                         rc.attack(patternTile.getMapLocation(), useSecondaryColor);
@@ -206,10 +208,32 @@ public class RobotPlayer {
         }
         if (rc.canMopSwing(dir)){
             rc.mopSwing(dir);
-            System.out.println("Mop Swing! Booyah!");
+            //System.out.println("Mop Swing! Booyah!");
         }
         else if (rc.canAttack(nextLoc)){
             rc.attack(nextLoc);
+        }
+        // We can also move our code into different methods or classes to better organize it!
+        updateEnemyRobots(rc);
+    }
+
+    public static void runSplasher(RobotController rc) throws GameActionException{
+        // Move and attack randomly.
+        Direction dir = directions[rng.nextInt(directions.length)];
+        MapLocation nextLoc = rc.getLocation().add(dir);
+        if (rc.canMove(dir)){
+            rc.move(dir);
+        }
+        nextLoc = rc.getLocation().add(dir).add(dir);
+        MapInfo candidate = rc.senseMapInfo(nextLoc);
+        // Search for a nearby ruin to complete.
+
+        if (candidate.getPaint() != ALLY_PRIMARY || candidate.getPaint() != ALLY_SECONDARY)
+            {
+            if (rc.canAttack(nextLoc)){
+                rc.attack(nextLoc);
+                System.out.println("bomber! Booyah!");
+            }
         }
         // We can also move our code into different methods or classes to better organize it!
         updateEnemyRobots(rc);
