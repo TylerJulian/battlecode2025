@@ -1,6 +1,6 @@
-package v0;
-
+package v1;
 import battlecode.common.*;
+import v1.util.FastMath;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -29,6 +29,8 @@ public class RobotPlayer {
     static int soldierCount = 0;
     static MapLocation last_seen_allied_paint_tower = null;
     static MapLocation first_seen_allied_paint_tower = null;
+
+    static MapLocation target = null;
 
     /**
      * A random number generator.
@@ -140,6 +142,13 @@ public class RobotPlayer {
         return (temp != UnitType.MOPPER) && (temp != UnitType.SOLDIER) && (temp != UnitType.SPLASHER);
     }
 
+    public static MapLocation getOppositeLocation(MapLocation current)
+    {
+        int h = rc.getMapHeight();
+        int w = rc.getMapWidth();
+        MapLocation newLocation = new MapLocation(w - current.x, h - current.y);
+        return newLocation;
+    }
 
     /**
      * Run a single turn for towers.
@@ -284,11 +293,16 @@ public class RobotPlayer {
         }
 
         // Move and attack randomly if no objective.
-        Direction dir = directions[rng.nextInt(directions.length)];
-        MapLocation nextLoc = rc.getLocation().add(dir);
-        if (rc.canMove(dir)){
-            rc.move(dir);
-        }
+//        MapLocation nextLoc = getOppositeLocation(rc.getLocation());
+//        if (FastMath.get_distance(rc.getLocation(), nextLoc) < 10)
+//        {
+//            bug.move_toward_goal2(rc, nextLoc);
+//        }
+//        else
+//        {
+//
+//        }
+        bug.randomMove();
         // Try to paint beneath us as we walk to avoid paint penalties.
         // Avoiding wasting paint by re-painting our own tiles.
         MapInfo currentTile = rc.senseMapInfo(rc.getLocation());
